@@ -32,4 +32,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
+<<<<<<< HEAD
           publish_branch: gh-pages
+=======
+          publish_branch: gh-pages
+>>>>>>> f412b9419480cf138404e71b66464b86a35d2b98
