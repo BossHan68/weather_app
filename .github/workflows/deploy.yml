@@ -3,7 +3,7 @@ name: Deploy Flutter Web to GitHub Pages
 on:
   push:
     branches:
-      - main   # ทุกครั้งที่ push ไป main จะ trigger workflow
+      - main
 
 permissions:
   contents: write
@@ -33,4 +33,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
           publish_branch: gh-pages
-
