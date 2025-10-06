@@ -1,0 +1,75 @@
+# ; name: Deploy Flutter Web to GitHub Pages
+
+# ; # กำหนดเงื่อนไข: Action จะทำงานทุกครั้งที่มีการ Push ไปที่ branch 'main' หรือ 'master'
+# ; on:
+# ;   push:
+# ;     branches:
+# ;       - main
+# ;       - master
+
+# ; # อนุญาตให้ Action เขียนไฟล์ใน Repository (จำเป็นสำหรับการ Deploy)
+# ; permissions:
+# ;   contents: write
+
+# ; jobs:
+# ;   build_and_deploy:
+# ;     runs-on: ubuntu-latest # รันบนเครื่องจำลอง Linux ของ GitHub
+
+# ;     steps:
+# ;       - name: Checkout Code
+# ;         uses: actions/checkout@v4 # ดึงโค้ดล่าสุด
+
+# ;       - name: Setup Flutter
+# ;         uses: subosito/flutter-action@v2 # ติดตั้ง Flutter SDK
+# ;         with:
+# ;           flutter-version: '3.x' # ใช้เวอร์ชันล่าสุดของ Flutter
+
+# ;       - name: Install Dependencies
+# ;         run: flutter pub get # ติดตั้งแพ็กเกจทั้งหมด
+
+# ;       - name: Build Web
+# ;         run: flutter build web --release # สร้างไฟล์เว็บเวอร์ชัน Production
+
+# ;       - name: Deploy to GitHub Pages
+# ;         uses: peaceiris/actions-gh-pages@v3 # ใช้ Action ยอดนิยมสำหรับ GitHub Pages
+# ;         with:
+# ;           github_token: ${{ secrets.GITHUB_TOKEN }} # ใช้ Token อัตโนมัติของ GitHub
+# ;           publish_dir: ./build/web # บอกว่าไฟล์สำหรับ Deploy อยู่ในโฟลเดอร์นี้
+# ;           publish_branch: gh-pages # บอกให้ Push ไฟล์ไปยัง branch 'gh-pages'
+
+
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main   # ทุกครั้งที่ push ไป main จะ trigger workflow
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: gh-pages
