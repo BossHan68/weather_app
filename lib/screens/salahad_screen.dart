@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+// import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
@@ -101,7 +101,7 @@ class _SalahadScreenState extends State<SalahadScreen> {
   }
 }
 
-// ================= Prayer Times Screen =================
+// ================= Prayer Times Screen (ไม่เปลี่ยนแปลง) =================
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
 
@@ -382,7 +382,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Date and Location Card
                       Card(
                         elevation: 6,
                         shape: RoundedRectangleBorder(
@@ -475,7 +474,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
 
                       const SizedBox(height: 16),
 
-                      // Location Selector Card
                       Card(
                         elevation: 4,
                         shape: RoundedRectangleBorder(
@@ -668,7 +666,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
 
                       const SizedBox(height: 20),
 
-                      // Prayer Times Cards
                       ...prayerTimes.entries.map((entry) {
                         final prayerIcons = {
                           "Fajr": Icons.brightness_2,
@@ -806,66 +803,27 @@ class QiblaCompassScreen extends StatefulWidget {
   State<QiblaCompassScreen> createState() => _QiblaCompassScreenState();
 }
 
-class _QiblaCompassScreenState extends State<QiblaCompassScreen>
-    with TickerProviderStateMixin {
+class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
   double? qiblaDirection;
-  double? userDirection = 0.0;
-  double? previousDirection;
+  double? currentHeading = 0.0;
   bool isLoading = true;
   String? errorMsg;
   Position? currentPosition;
-  late AnimationController _pulseController;
-  late AnimationController _rotationController;
-  late AnimationController _needleController;
   StreamSubscription<CompassEvent>? _compassSubscription;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    _needleController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
     _getQiblaDirection();
     _startCompassListener();
   }
 
   void _startCompassListener() {
-    if (kIsWeb) {
-      // Web simulation - rotate continuously for demo
-      Timer.periodic(const Duration(milliseconds: 50), (timer) {
-        if (mounted) {
-          setState(() {
-            userDirection = (userDirection! + 1) % 360;
-          });
-        }
-      });
-      return;
-    }
-
     _compassSubscription = FlutterCompass.events?.listen((event) {
       if (mounted && event.heading != null) {
-        final newDirection = event.heading!;
-        
-        if (previousDirection == null ||
-            (newDirection - previousDirection!).abs() > 1.0) {
-          setState(() {
-            userDirection = newDirection;
-            previousDirection = newDirection;
-          });
-          _needleController.forward().then((_) => _needleController.reverse());
-        }
+        setState(() {
+          currentHeading = event.heading!;
+        });
       }
     });
   }
@@ -873,13 +831,9 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
   @override
   void dispose() {
     _compassSubscription?.cancel();
-    _pulseController.dispose();
-    _rotationController.dispose();
-    _needleController.dispose();
     super.dispose();
   }
 
-  // คำนวณทิศทาง Qibla แบบออฟไลน์ (ใช้เป็น fallback)
   double _calculateQiblaDirection(double lat, double lng) {
     const double kaabaLat = 21.4225;
     const double kaabaLng = 39.8262;
@@ -907,14 +861,12 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
     });
 
     try {
-      // ตรวจสอบ Location Service
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() => errorMsg = "กรุณาเปิดใช้งาน Location Service");
         return;
       }
 
-      // ขออนุญาตใช้ตำแหน่ง
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -926,7 +878,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
         return;
       }
 
-      // รับตำแหน่งปัจจุบัน
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 15),
@@ -936,7 +887,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
         currentPosition = position;
       });
 
-      // เรียกใช้ API จริงจาก aladhan.com
       try {
         final qiblaUrl =
             "https://api.aladhan.com/v1/qibla/${position.latitude}/${position.longitude}";
@@ -951,7 +901,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
               qiblaDirection = qiblaData["data"]["direction"] * 1.0;
               errorMsg = null;
             });
-            _rotationController.forward();
           } else {
             throw Exception("API returned invalid data");
           }
@@ -959,31 +908,25 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
           throw Exception("HTTP ${qiblaRes.statusCode}");
         }
       } catch (e) {
-        // Fallback ไปใช้การคำนวณออฟไลน์
         setState(() {
           qiblaDirection = _calculateQiblaDirection(
             position.latitude,
             position.longitude,
           );
-          errorMsg = "ใช้การคำนวณออฟไลน์ (ไม่มีอินเทอร์เน็ต)";
+          errorMsg = "ใช้การคำนวณออฟไลน์";
         });
-        _rotationController.forward();
       }
-    } catch (e) {
+    }
+    catch (e) {
       setState(() => errorMsg = "ข้อผิดพลาด: ${e.toString()}");
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  double get _qiblaAngle {
-    if (qiblaDirection == null || userDirection == null) return 0.0;
-    return (qiblaDirection! - userDirection!) * pi / 180;
-  }
-
   bool get _isAligned {
-    if (qiblaDirection == null || userDirection == null) return false;
-    final diff = ((qiblaDirection! - userDirection!) % 360).abs();
+    if (qiblaDirection == null || currentHeading == null) return false;
+    final diff = ((qiblaDirection! - currentHeading!) % 360).abs();
     return diff < 8 || diff > 352;
   }
 
@@ -1037,7 +980,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Location Info Card
                     if (currentPosition != null)
                       Card(
                         elevation: 4,
@@ -1106,7 +1048,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
 
                     const SizedBox(height: 20),
 
-                    // Error messages
                     if (errorMsg != null)
                       Card(
                         elevation: 2,
@@ -1149,7 +1090,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
 
                     if (errorMsg != null) const SizedBox(height: 16),
 
-                    // Enhanced Compass like the attached image
+                    // Enhanced Compass
                     Card(
                       elevation: 12,
                       shape: RoundedRectangleBorder(
@@ -1168,7 +1109,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                         ),
                         child: Column(
                           children: [
-                            // Title with Kaaba icon
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -1205,240 +1145,96 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                             ),
                             const SizedBox(height: 24),
 
-                            // Enhanced Compass Design
+                            // Golden Compass Design
                             Stack(
                               alignment: Alignment.center,
                               children: [
-                                // Pulsing ring when aligned
-                                if (_isAligned)
-                                  AnimatedBuilder(
-                                    animation: _pulseController,
-                                    builder: (context, child) {
-                                      return Container(
-                                        width: 300 + (_pulseController.value * 20),
-                                        height: 300 + (_pulseController.value * 20),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.green[400]!.withOpacity(
-                                                0.3 + (_pulseController.value * 0.4)),
-                                            width: 3,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-
-                                // Main compass circle with turquoise color like the image
+                                // Outer golden ring
                                 Container(
-                                  width: 280,
-                                  height: 280,
+                                  width: 300,
+                                  height: 300,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    gradient: RadialGradient(
+                                    gradient: const RadialGradient(
                                       colors: [
-                                        const Color(0xFF7FDBDA), // Light turquoise center
-                                        const Color(0xFF4DB6AC), // Medium turquoise
-                                        const Color(0xFF26A69A), // Darker turquoise edge
+                                        Color(0xFFFFD700),
+                                        Color(0xFFDAA520),
+                                        Color(0xFFB8860B),
                                       ],
-                                      stops: const [0.0, 0.7, 1.0],
-                                    ),
-                                    border: Border.all(
-                                      color: _isAligned 
-                                          ? Colors.green[600]!
-                                          : const Color(0xFF26A69A),
-                                      width: _isAligned ? 4 : 3,
+                                      stops: [0.7, 0.85, 1.0],
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: (_isAligned 
-                                            ? Colors.green[400]!
-                                            : const Color(0xFF4DB6AC)).withOpacity(0.3),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 8),
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
                                       ),
                                     ],
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      // Degree markers (like the image)
-                                      ...List.generate(36, (index) {
-                                        final angle = index * 10.0;
-                                        final isMainDirection = angle % 90 == 0;
-                                        return Positioned.fill(
-                                          child: Transform.rotate(
-                                            angle: angle * pi / 180,
-                                            child: Align(
-                                              alignment: Alignment.topCenter,
-                                              child: Container(
-                                                margin: const EdgeInsets.only(top: 8),
-                                                width: isMainDirection ? 3 : 1.5,
-                                                height: isMainDirection ? 20 : 12,
-                                                decoration: BoxDecoration(
-                                                  color: isMainDirection 
-                                                      ? Colors.white
-                                                      : Colors.white.withOpacity(0.7),
-                                                  borderRadius: BorderRadius.circular(2),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }),
+                                ),
 
-                                      // Degree numbers around the edge (green color like the image)
-                                      ...List.generate(36, (index) {
-                                        final angle = index * 10.0;
-                                        if (angle % 30 == 0) { // Show every 30 degrees
-                                          return Positioned.fill(
-                                            child: Transform.rotate(
-                                              angle: angle * pi / 180,
-                                              child: Align(
-                                                alignment: Alignment.topCenter,
-                                                child: Container(
-                                                  margin: const EdgeInsets.only(top: 25),
-                                                  child: Transform.rotate(
-                                                    angle: -angle * pi / 180,
-                                                    child: Text(
-                                                      "${angle.toInt()}",
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Color(0xFF1B5E20), // Dark green like the image
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                        return const SizedBox.shrink();
-                                      }),
+                                // Inner compass face (cream/beige)
+                                Container(
+                                  width: 270,
+                                  height: 270,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: const RadialGradient(
+                                      colors: [
+                                        Color(0xFFFFF8DC),
+                                        Color(0xFFFFFAF0),
+                                        Color(0xFFF5DEB3),
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: CustomPaint(
+                                    painter: GoldenCompassFacePainter(
+                                      currentHeading: currentHeading ?? 0,
+                                    ),
+                                  ),
+                                ),
 
-                                      // Cardinal directions (N, E, S, W)
-                                      const Positioned(
-                                        top: 15,
-                                        left: 0,
-                                        right: 0,
-                                        child: Text(
-                                          "N",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
+                                // Compass needle (rotates based on Qibla and current heading)
+                                if (qiblaDirection != null && currentHeading != null)
+                                  Transform.rotate(
+                                    angle: (qiblaDirection! - currentHeading!) * pi / 180,
+                                    child: CustomPaint(
+                                      size: const Size(200, 200),
+                                      painter: GoldenCompassNeedlePainter(
+                                        isAligned: _isAligned,
                                       ),
-                                      const Positioned(
-                                        right: 15,
-                                        top: 0,
-                                        bottom: 0,
-                                        child: Center(
-                                          child: Text(
-                                            "E",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const Positioned(
-                                        bottom: 15,
-                                        left: 0,
-                                        right: 0,
-                                        child: Text(
-                                          "S",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      const Positioned(
-                                        left: 15,
-                                        top: 0,
-                                        bottom: 0,
-                                        child: Center(
-                                          child: Text(
-                                            "W",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                    ),
+                                  ),
 
-                                      // Compass needle (red and blue like traditional compass)
-                                      if (qiblaDirection != null && userDirection != null)
-                                        Center(
-                                          child: TweenAnimationBuilder<double>(
-                                            tween: Tween(
-                                              begin: 0.0,
-                                              end: _qiblaAngle,
-                                            ),
-                                            duration: const Duration(milliseconds: 300),
-                                            curve: Curves.easeOutCubic,
-                                            builder: (context, angle, child) {
-                                              return Transform.rotate(
-                                                angle: angle,
-                                                child: CustomPaint(
-                                                  size: const Size(160, 160),
-                                                  painter: CompassNeedlePainter(
-                                                    isAligned: _isAligned,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-
-                                      // Center circle
-                                      Center(
-                                        child: Container(
-                                          width: 16,
-                                          height: 16,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _isAligned 
-                                                ? Colors.green[600]
-                                                : Colors.grey[700],
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 2,
-                                            ),
-                                          ),
-                                        ),
+                                // Center golden button
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: const RadialGradient(
+                                      colors: [
+                                        Color(0xFFFFD700),
+                                        Color(0xFFB8860B),
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color: const Color(0xFF8B4513),
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
                                       ),
-
-                                      // Kaaba icon at the top for reference
-                                      if (_isAligned)
-                                        Positioned(
-                                          top: 50,
-                                          left: 0,
-                                          right: 0,
-                                          child: Center(
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green[600],
-                                                borderRadius: BorderRadius.circular(20),
-                                              ),
-                                              child: const Icon(
-                                                Icons.mosque,
-                                                color: Colors.white,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                     ],
                                   ),
                                 ),
@@ -1447,7 +1243,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
 
                             const SizedBox(height: 24),
 
-                            // Status information
                             if (qiblaDirection != null) ...[
                               Container(
                                 padding: const EdgeInsets.all(16),
@@ -1495,10 +1290,10 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                          if (userDirection != null) ...[
+                                          if (currentHeading != null) ...[
                                             const SizedBox(height: 4),
                                             Text(
-                                              "ทิศทางปัจจุบัน: ${userDirection!.toStringAsFixed(1)}°",
+                                              "ทิศทางปัจจุบัน: ${currentHeading!.toStringAsFixed(1)}°",
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 color: Colors.grey[600],
@@ -1514,7 +1309,6 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
 
                             const SizedBox(height: 16),
 
-                            // Instructions
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -1545,8 +1339,9 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                                   const SizedBox(height: 8),
                                   const Text(
                                     "• ถือมือถือให้เรียบและระดับ\n"
-                                    "• หมุนตัวช้าๆ จนเข็มชี้ไปยัง Kaaba\n"
-                                    "• เมื่อตรงทิศ ไอคอน Kaaba จะเป็นสีเขียว\n"
+                                    "• หมุนตัวเองช้าๆ (ไม่ใช่หมุนหน้าจอ)\n"
+                                    "• เข็มสีแดงจะชี้ไปทิศกิบลัต\n"
+                                    "• เมื่อตรงทิศ จะแจ้งเตือน\n"
                                     "• หลีกเลี่ยงสิ่งที่มีแม่เหล็ก",
                                     style: TextStyle(
                                       fontSize: 14,
@@ -1569,58 +1364,203 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
   }
 }
 
-// Custom painter for compass needle (like traditional compass)
-class CompassNeedlePainter extends CustomPainter {
-  final bool isAligned;
+// Custom painter for golden compass face with degree markings
+class GoldenCompassFacePainter extends CustomPainter {
+  final double currentHeading;
 
-  CompassNeedlePainter({required this.isAligned});
+  GoldenCompassFacePainter({required this.currentHeading});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final needleLength = size.width / 2 - 20;
+    final radius = size.width / 2;
 
-    // North pointer (red) - points to Qibla
-    final northPaint = Paint()
-      ..color = isAligned ? Colors.green[600]! : Colors.red[600]!
-      ..style = PaintingStyle.fill;
+    // Draw degree markers (360 small lines)
+    for (int i = 0; i < 72; i++) {
+      final angle = (i * 5.0 - currentHeading) * pi / 180;
+      final isMainDirection = i % 18 == 0; // Every 90 degrees
+      final isSecondary = i % 9 == 0; // Every 45 degrees
+      final isTertiary = i % 3 == 0; // Every 15 degrees
 
-    final northPath = Path();
-    northPath.moveTo(center.dx, center.dy - needleLength);
-    northPath.lineTo(center.dx - 8, center.dy);
-    northPath.lineTo(center.dx + 8, center.dy);
-    northPath.close();
+      double lineLength;
+      double lineWidth;
+      Color lineColor;
 
-    canvas.drawPath(northPath, northPaint);
+      if (isMainDirection) {
+        lineLength = 25;
+        lineWidth = 3;
+        lineColor = const Color(0xFF8B4513); // Brown
+      } else if (isSecondary) {
+        lineLength = 18;
+        lineWidth = 2.5;
+        lineColor = const Color(0xFFB8860B); // Dark golden
+      } else if (isTertiary) {
+        lineLength = 12;
+        lineWidth = 2;
+        lineColor = const Color(0xFFDAA520); // Golden
+      } else {
+        lineLength = 8;
+        lineWidth = 1;
+        lineColor = const Color(0xFFDAA520).withOpacity(0.5);
+      }
 
-    // South pointer (blue/white)
-    final southPaint = Paint()
-      ..color = isAligned ? Colors.green[300]! : Colors.blue[400]!
-      ..style = PaintingStyle.fill;
+      final startX = center.dx + (radius - lineLength - 5) * cos(angle);
+      final startY = center.dy + (radius - lineLength - 5) * sin(angle);
+      final endX = center.dx + (radius - 5) * cos(angle);
+      final endY = center.dy + (radius - 5) * sin(angle);
 
-    final southPath = Path();
-    southPath.moveTo(center.dx, center.dy + needleLength);
-    southPath.lineTo(center.dx - 6, center.dy);
-    southPath.lineTo(center.dx + 6, center.dy);
-    southPath.close();
+      final paint = Paint()
+        ..color = lineColor
+        ..strokeWidth = lineWidth
+        ..strokeCap = StrokeCap.round;
 
-    canvas.drawPath(southPath, southPaint);
+      canvas.drawLine(
+        Offset(startX, startY),
+        Offset(endX, endY),
+        paint,
+      );
+    }
 
-    // Add white outline for better visibility
-    final outlinePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+    // Draw cardinal directions (N, E, S, W) that rotate with heading
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
 
-    canvas.drawPath(northPath, outlinePaint);
-    canvas.drawPath(southPath, outlinePaint);
+    final directions = ['N', 'E', 'S', 'W'];
+    final directionAngles = [0, 90, 180, 270];
+
+    for (int i = 0; i < directions.length; i++) {
+      final angle = (directionAngles[i] - currentHeading) * pi / 180;
+      final x = center.dx + (radius - 40) * cos(angle - pi / 2);
+      final y = center.dy + (radius - 40) * sin(angle - pi / 2);
+
+      textPainter.text = TextSpan(
+        text: directions[i],
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: i == 0 ? const Color(0xFFDC143C) : const Color(0xFF8B4513),
+        ),
+      );
+
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+      );
+    }
+
+    // Draw degree numbers
+    for (int i = 0; i < 36; i++) {
+      if (i % 3 == 0) { // Every 30 degrees
+        final degree = i * 10;
+        final angle = (degree - currentHeading) * pi / 180;
+        final x = center.dx + (radius - 60) * cos(angle - pi / 2);
+        final y = center.dy + (radius - 60) * sin(angle - pi / 2);
+
+        textPainter.text = TextSpan(
+          text: "$degree",
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF8B4513),
+          ),
+        );
+
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+        );
+      }
+    }
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
+  bool shouldRepaint(GoldenCompassFacePainter oldDelegate) {
+    return oldDelegate.currentHeading != currentHeading;
+  }
 }
 
-// ================= Tasbih Screen =================
+// Custom painter for golden compass needle
+class GoldenCompassNeedlePainter extends CustomPainter {
+  final bool isAligned;
+
+  GoldenCompassNeedlePainter({required this.isAligned});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final needleLength = size.width / 2 - 40;
+
+    // North pointer (red - points to Qibla)
+    final northPath = Path();
+    northPath.moveTo(center.dx, center.dy - needleLength);
+    northPath.lineTo(center.dx - 10, center.dy + 10);
+    northPath.lineTo(center.dx, center.dy);
+    northPath.lineTo(center.dx + 10, center.dy + 10);
+    northPath.close();
+
+    final northGradient = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: isAligned
+            ? [Colors.green[400]!, Colors.green[700]!]
+            : [const Color(0xFFFF4444), const Color(0xFFCC0000)],
+      ).createShader(northPath.getBounds());
+
+    canvas.drawPath(northPath, northGradient);
+
+    // North pointer border (golden)
+    final northBorderPaint = Paint()
+      ..color = const Color(0xFFDAA520)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    canvas.drawPath(northPath, northBorderPaint);
+
+    // South pointer (black/grey)
+    final southPath = Path();
+    southPath.moveTo(center.dx, center.dy + needleLength);
+    southPath.lineTo(center.dx - 8, center.dy - 10);
+    southPath.lineTo(center.dx, center.dy);
+    southPath.lineTo(center.dx + 8, center.dy - 10);
+    southPath.close();
+
+    final southGradient = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [Color(0xFF333333), Color(0xFF666666)],
+      ).createShader(southPath.getBounds());
+
+    canvas.drawPath(southPath, southGradient);
+
+    // South pointer border (golden)
+    canvas.drawPath(southPath, northBorderPaint);
+
+    // Add shine effect on north pointer
+    final shinePath = Path();
+    shinePath.moveTo(center.dx - 3, center.dy - needleLength + 10);
+    shinePath.lineTo(center.dx - 5, center.dy);
+    shinePath.lineTo(center.dx - 2, center.dy);
+    shinePath.close();
+
+    final shinePaint = Paint()
+      ..color = Colors.white.withOpacity(0.4);
+
+    canvas.drawPath(shinePath, shinePaint);
+  }
+
+  @override
+  bool shouldRepaint(GoldenCompassNeedlePainter oldDelegate) {
+    return oldDelegate.isAligned != isAligned;
+  }
+}
+
+// ================= Tasbih Screen (ไม่เปลี่ยนแปลง) =================
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
 
@@ -1765,7 +1705,6 @@ class _TasbihScreenState extends State<TasbihScreen>
                 ),
                 child: Column(
                   children: [
-                    // Top Control Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -1857,7 +1796,6 @@ class _TasbihScreenState extends State<TasbihScreen>
 
                     const SizedBox(height: 40),
 
-                    // Count Display
                     AnimatedBuilder(
                       animation: _tapController,
                       builder: (context, child) {
@@ -1889,7 +1827,7 @@ class _TasbihScreenState extends State<TasbihScreen>
                                       fontSize: 80,
                                       fontWeight: FontWeight.w300,
                                       color: Colors.white,
-                                    ),
+                                      ),
                                   ),
                         );
                       },
