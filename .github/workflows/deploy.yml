@@ -3,35 +3,41 @@ name: Deploy Flutter Web to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # รันทุกครั้งที่ push ไป main
 
 permissions:
-  contents: write
+  contents: write  # ให้ workflow เขียนไฟล์บน repo
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout source code
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.0'
+          flutter-version: '3.13.0'  # เวอร์ชัน Flutter ที่คุณใช้บน local
 
+      # 3️⃣ ตรวจสอบ Flutter environment
       - name: Flutter Doctor
         run: flutter doctor -v
 
+      # 4️⃣ ติดตั้ง dependencies
       - name: Install Dependencies
         run: flutter pub get
 
+      # 5️⃣ Build Flutter Web
       - name: Build Web
         run: flutter build web --release
 
+      # 6️⃣ Deploy ไป GitHub Pages
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web
