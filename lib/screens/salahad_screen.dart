@@ -1978,6 +1978,9 @@ class _TasbihScreenState extends State<TasbihScreen>
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 14,
+
+
+                                            
                                             fontWeight:
                                                 isSelected
                                                     ? FontWeight.bold
