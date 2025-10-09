@@ -1974,8 +1974,7 @@ class _TasbihScreenState extends State<TasbihScreen>
                                             8,
                                           ),
                                         ),
-                                        child: Text(
-                                          "+$value",
+                                        child: Text(                                        "+$value",
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 14,
