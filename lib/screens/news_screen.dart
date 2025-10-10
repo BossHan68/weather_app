@@ -81,23 +81,35 @@ class AirQuality {
 
   static String _getAQILevel(int aqi) {
     switch (aqi) {
-      case 1: return 'ดีมาก';
-      case 2: return 'ดี';
-      case 3: return 'ปานกลาง';
-      case 4: return 'แย่';
-      case 5: return 'แย่มาก';
-      default: return 'ไม่ทราบ';
+      case 1:
+        return 'ดีมาก';
+      case 2:
+        return 'ดี';
+      case 3:
+        return 'ปานกลาง';
+      case 4:
+        return 'แย่';
+      case 5:
+        return 'แย่มาก';
+      default:
+        return 'ไม่ทราบ';
     }
   }
 
   static Color _getAQIColor(int aqi) {
     switch (aqi) {
-      case 1: return Colors.green;
-      case 2: return Colors.lightGreen;
-      case 3: return Colors.yellow;
-      case 4: return Colors.orange;
-      case 5: return Colors.red;
-      default: return Colors.grey;
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.lightGreen;
+      case 3:
+        return Colors.yellow;
+      case 4:
+        return Colors.orange;
+      case 5:
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 }
@@ -162,7 +174,6 @@ class NotificationSettings {
     );
   }
 
-  // เพิ่ม copyWith method สำหรับการอัพเดทการตั้งค่า
   NotificationSettings copyWith({
     bool? morningAlert,
     bool? rainAlert,
@@ -198,7 +209,6 @@ class EnhancedNewsScreen extends StatefulWidget {
 
 class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     with SingleTickerProviderStateMixin {
-  
   // ตัวแปรสำหรับฟีเจอร์ใหม่
   List<WeatherForecast> weeklyForecast = [];
   Map<String, AirQuality> airQualityData = {};
@@ -206,13 +216,18 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
   NotificationSettings notificationSettings = NotificationSettings();
   Position? currentLocation;
   Timer? scheduledNotificationTimer;
-  
+
+  // ตัวแปรสำหรับการค้นหา
+  TextEditingController searchController = TextEditingController();
+  List<String> filteredLocations = [];
+  bool isSearching = false;
+
   // ตัวแปรเดิม
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   final String apiKey = '4fc2c86a0eb437d589ef2a0efc3fd6de';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5';
-  
+
   List<Map<String, dynamic>> weatherNews = [];
   List<Map<String, dynamic>> weatherAlerts = [];
   bool isLoading = false;
@@ -245,6 +260,13 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       'ลำปาง',
       'พิษณุโลก',
       'สุโขทัย',
+      'น่าน',
+      'แพร่',
+      'แม่ฮ่องสอน',
+      'ลำพูน',
+      'อุตรดิตถ์',
+      'ตาก',
+      'พะเยา',
     ],
     'ภาคตะวันออกเฉียงเหนือ': [
       'ขอนแก่น',
@@ -252,6 +274,21 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       'อุดรธานี',
       'อุบลราชธานี',
       'เลย',
+      'หนองคาย',
+      'มหาสารคาม',
+      'ร้อยเอ็ด',
+      'กาฬสินธุ์',
+      'สกลนคร',
+      'นครพนม',
+      'มุกดาหาร',
+      'ชัยภูมิ',
+      'อำนาจเจริญ',
+      'บึงกาฬ',
+      'หนองบัวลำภู',
+      'ยโสธร',
+      'ศรีสะเกษ',
+      'สุรินทร์',
+      'บุรีรัมย์',
     ],
     'ภาคกลาง': [
       'กรุงเทพมหานคร',
@@ -259,6 +296,20 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       'ปทุมธานี',
       'สมุทรปราการ',
       'นครปฐม',
+      'สมุทรสาคร',
+      'สมุทรสงคราม',
+      'พระนครศรีอยุธยา',
+      'อ่างทอง',
+      'ลพบุรี',
+      'สิงห์บุรี',
+      'ชัยนาท',
+      'สระบุรี',
+      'นครนายก',
+      'สุพรรณบุรี',
+      'กาญจนบุรี',
+      'ราชบุรี',
+      'เพชรบุรี',
+      'ประจวบคีรีขันธ์',
     ],
     'ภาคตะวันออก': [
       'ชลบุรี',
@@ -266,6 +317,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       'จันทบุรี',
       'ตราด',
       'ฉะเชิงเทรา',
+      'ปราจีนบุรี',
+      'สระแก้ว',
     ],
     'ภาคใต้': [
       'ภูเก็ต',
@@ -273,8 +326,113 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       'สุราษฎร์ธานี',
       'กระบี่',
       'นครศรีธรรมราช',
+      'พังงา',
+      'ระนอง',
+      'ชุมพร',
+      'สงขลา',
+      'สตูล',
+      'ตรัง',
+      'พัทลุง',
+      'ปัตตานี',
+      'ยะลา',
+      'นราธิวาส',
     ],
   };
+
+  // รายชื่อจังหวัดและอำเภอทั้งหมด 77 จังหวัด
+  final List<Map<String, dynamic>> allLocations = [
+    // ภาคเหนือ
+    {'name': 'เชียงใหม่', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'เมืองเชียงใหม่', 'type': 'district', 'province': 'เชียงใหม่'},
+    {'name': 'ดอยสะเก็ด', 'type': 'district', 'province': 'เชียงใหม่'},
+    {'name': 'สันทราย', 'type': 'district', 'province': 'เชียงใหม่'},
+    {'name': 'เชียงราย', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'เมืองเชียงราย', 'type': 'district', 'province': 'เชียงราย'},
+    {'name': 'แม่สาย', 'type': 'district', 'province': 'เชียงราย'},
+    {'name': 'ลำปาง', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'พิษณุโลก', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'แม่ฮ่องสอน', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'น่าน', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'พะเยา', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'แพร่', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'ลำพูน', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'อุตรดิตถ์', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'ตาก', 'type': 'province', 'region': 'ภาคเหนือ'},
+    {'name': 'สุโขทัย', 'type': 'province', 'region': 'ภาคเหนือ'},
+
+    // ภาคตะวันออกเฉียงเหนือ
+    {'name': 'นครราชสีมา', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'ขอนแก่น', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'อุดรธานี', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'อุบลราชธานี', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'เลย', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'หนองคาย', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'มหาสารคาม', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'ร้อยเอ็ด', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'กาฬสินธุ์', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'สกลนคร', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'นครพนม', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'มุกดาหาร', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'ชัยภูมิ', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'อำนาจเจริญ', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'บึงกาฬ', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'หนองบัวลำภู', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'ยโสธร', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'ศรีสะเกษ', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'สุรินทร์', 'type': 'province', 'region': 'ภาคอีสาน'},
+    {'name': 'บุรีรัมย์', 'type': 'province', 'region': 'ภาคอีสาน'},
+
+    // ภาคกลาง
+    {'name': 'กรุงเทพมหานคร', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'บางรัก', 'type': 'district', 'province': 'กรุงเทพมหานคร'},
+    {'name': 'ปทุมวัน', 'type': 'district', 'province': 'กรุงเทพมหานคร'},
+    {'name': 'นนทบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'ปทุมธานี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สมุทรปราการ', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'นครปฐม', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สมุทรสาคร', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สมุทรสงคราม', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'พระนครศรีอยุธยา', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'อ่างทอง', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'ลพบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สิงห์บุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'ชัยนาท', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สระบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'นครนายก', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'สุพรรณบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'กาญจนบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'ราชบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'เพชรบุรี', 'type': 'province', 'region': 'ภาคกลาง'},
+    {'name': 'ประจวบคีรีขันธ์', 'type': 'province', 'region': 'ภาคกลาง'},
+
+    // ภาคตะวันออก
+    {'name': 'ชลบุรี', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'เมืองชลบุรี', 'type': 'district', 'province': 'ชลบุรี'},
+    {'name': 'พัทยา', 'type': 'district', 'province': 'ชลบุรี'},
+    {'name': 'ระยอง', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'จันทบุรี', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'ตราด', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'ฉะเชิงเทรา', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'ปราจีนบุรี', 'type': 'province', 'region': 'ภาคตะวันออก'},
+    {'name': 'สระแก้ว', 'type': 'province', 'region': 'ภาคตะวันออก'},
+
+    // ภาคใต้
+    {'name': 'สุราษฎร์ธานี', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'นครศรีธรรมราช', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'กระบี่', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'พังงา', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ภูเก็ต', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ระนอง', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ชุมพร', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'สงขลา', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'หาดใหญ่', 'type': 'district', 'province': 'สงขลา'},
+    {'name': 'สตูล', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ตรัง', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'พัทลุง', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ปัตตานี', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'ยะลา', 'type': 'province', 'region': 'ภาคใต้'},
+    {'name': 'นราธิวาส', 'type': 'province', 'region': 'ภาคใต้'},
+  ];
 
   @override
   void initState() {
@@ -283,7 +441,10 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     initializeNotifications();
     loadNotificationSettings();
     getCurrentLocation();
-    
+
+    // Initialize search
+    searchController.addListener(_onSearchChanged);
+
     if (apiKey != 'YOUR_OPENWEATHER_API_KEY') {
       fetchAllWeatherData();
       setupScheduledNotifications();
@@ -295,8 +456,72 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     }
   }
 
+  void _onSearchChanged() {
+    String query = searchController.text.toLowerCase().trim();
+
+    if (query.isEmpty) {
+      setState(() {
+        isSearching = false;
+        filteredLocations = [];
+      });
+      return;
+    }
+
+    setState(() {
+      isSearching = true;
+      filteredLocations = allLocations
+          .where((location) => location['name'].toLowerCase().contains(query))
+          .map((location) {
+        String displayName = location['name'];
+        if (location['type'] == 'district') {
+          displayName += ' (${location['province']})';
+        }
+        return displayName;
+      }).toList();
+    });
+  }
+
+  void _selectLocation(String locationName) {
+    String searchCity = locationName.contains('(')
+        ? locationName.substring(0, locationName.indexOf('(')).trim()
+        : locationName;
+
+    setState(() {
+      searchController.clear();
+      isSearching = false;
+      filteredLocations = [];
+    });
+
+    String? foundRegion;
+    for (var entry in regionCities.entries) {
+      if (entry.value.contains(searchCity)) {
+        foundRegion = entry.key;
+        break;
+      }
+    }
+
+    if (foundRegion != null) {
+      setState(() {
+        selectedRegion = foundRegion!;
+      });
+    }
+
+    if (apiKey != 'YOUR_OPENWEATHER_API_KEY') {
+      fetchWeatherForCity(searchCity);
+    } else {
+      loadSampleDataForCity(searchCity);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('กำลังโหลดข้อมูลสภาพอากาศสำหรับ $searchCity'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   // ===== INITIALIZATION FUNCTIONS =====
-  
+
   Future<void> initializeNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -314,7 +539,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
   Future<void> loadNotificationSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? settingsJson = prefs.getString('notification_settings');
-    
+
     if (settingsJson != null) {
       setState(() {
         notificationSettings = NotificationSettings.fromJson(
@@ -333,10 +558,9 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
   }
 
   Future<void> getCurrentLocation() async {
-    print('Getting current location...'); // Debug log
-    
+    print('Getting current location...');
+
     try {
-      // แสดง loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -354,7 +578,6 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
         ),
       );
 
-      // ตรวจสอบว่า Location services เปิดอยู่หรือไม่
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -372,15 +595,14 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
         return;
       }
 
-      // ตรวจสอบ permission
       LocationPermission permission = await Geolocator.checkPermission();
-      print('Current permission: $permission'); // Debug log
-      
+      print('Current permission: $permission');
+
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        print('Requested permission: $permission'); // Debug log
+        print('Requested permission: $permission');
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -399,19 +621,17 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
 
       if (permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always) {
-        
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10), // กำหนด timeout
+          timeLimit: Duration(seconds: 10),
         );
-        
-        print('Location obtained: ${position.latitude}, ${position.longitude}'); // Debug log
-        
+
+        print('Location obtained: ${position.latitude}, ${position.longitude}');
+
         setState(() {
           currentLocation = position;
         });
-        
-        // แสดงข้อความสำเร็จ
+
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -420,8 +640,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
             duration: Duration(seconds: 2),
           ),
         );
-        
-        // ดึงข้อมูลสภาพอากาศใหม่หลังได้ตำแหน่ง
+
         if (apiKey != 'YOUR_OPENWEATHER_API_KEY') {
           await fetchAllWeatherData();
         }
@@ -434,7 +653,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
         );
       }
     } catch (e) {
-      print('Error getting location: $e'); // Debug log
+      print('Error getting location: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -521,6 +740,41 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     }
   }
 
+  Future<void> fetchWeatherForCity(String city) async {
+    setState(() {
+      isLoading = true;
+      error = '';
+    });
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              '$baseUrl/weather?q=$city,TH&appid=$apiKey&units=metric&lang=th',
+            ),
+          )
+          .timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        Map<String, dynamic> newsItem = createNewsItem(data, city);
+
+        setState(() {
+          weatherNews = [newsItem];
+        });
+      }
+    } catch (e) {
+      print('Error fetching weather for $city: $e');
+      setState(() {
+        error = 'ไม่สามารถดึงข้อมูลสำหรับ $city ได้';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Future<void> fetchWeeklyForecast() async {
     if (currentLocation == null) return;
 
@@ -534,7 +788,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       if (response.statusCode == 200) {
         Map<String, dynamic> data = json.decode(response.body);
         List<dynamic> dailyData = data['daily'] ?? [];
-        
+
         setState(() {
           weeklyForecast = dailyData
               .take(7)
@@ -595,12 +849,12 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
 
   void setupScheduledNotifications() {
     scheduledNotificationTimer?.cancel();
-    
+
     if (notificationSettings.morningAlert) {
       Duration timeDifference = _calculateTimeDifference(
         notificationSettings.morningTime,
       );
-      
+
       scheduledNotificationTimer = Timer(timeDifference, () {
         sendMorningNotification();
         scheduledNotificationTimer = Timer.periodic(
@@ -620,23 +874,24 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       targetTime.hour,
       targetTime.minute,
     );
-    
+
     if (target.isBefore(now)) {
       target = target.add(Duration(days: 1));
     }
-    
+
     return target.difference(now);
   }
 
   Future<void> sendMorningNotification() async {
     if (weeklyForecast.isNotEmpty) {
       WeatherForecast today = weeklyForecast.first;
-      String message = 'วันนี้ ${today.maxTemp.toStringAsFixed(0)}°/${today.minTemp.toStringAsFixed(0)}° ${today.description}';
-      
+      String message =
+          'วันนี้ ${today.maxTemp.toStringAsFixed(0)}°/${today.minTemp.toStringAsFixed(0)}° ${today.description}';
+
       if (today.pop > 70) {
         message += ' โอกาสฝน ${today.pop.toStringAsFixed(0)}% อย่าลืมร่ม!';
       }
-      
+
       await sendScheduledNotification(
         'สวัสดีตอนเช้า',
         message,
@@ -678,12 +933,14 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
   ) async {
     double temp = data['main']['temp']?.toDouble() ?? 0.0;
     String weatherMain = data['weather'][0]['main'] ?? '';
-    
-    if (notificationSettings.temperatureAlert && temp > notificationSettings.temperatureThreshold) {
+
+    if (notificationSettings.temperatureAlert &&
+        temp > notificationSettings.temperatureThreshold) {
       Map<String, dynamic> alert = {
         'id': '${city}_temp_alert_${DateTime.now().millisecondsSinceEpoch}',
         'type': 'อุณหภูมิสูงเกินกำหนด',
-        'message': 'อุณหภูมิที่ $city สูงถึง ${temp.toStringAsFixed(1)}°C เกินขีดจำกัดที่ตั้งไว้',
+        'message':
+            'อุณหภูมิที่ $city สูงถึง ${temp.toStringAsFixed(1)}°C เกินขีดจำกัดที่ตั้งไว้',
         'city': city,
         'severity': 'high',
         'timestamp': DateTime.now().toIso8601String(),
@@ -711,7 +968,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
         Map<String, dynamic> alert = {
           'id': 'uv_alert_${DateTime.now().millisecondsSinceEpoch}',
           'type': 'UV Index สูง',
-          'message': 'ดัชนี UV สูงถึง ${uv.toStringAsFixed(1)} โปรดป้องกันตัวจากแสงแดด',
+          'message':
+              'ดัชนี UV สูงถึง ${uv.toStringAsFixed(1)} โปรดป้องกันตัวจากแสงแดด',
           'city': city,
           'severity': 'medium',
           'timestamp': DateTime.now().toIso8601String(),
@@ -726,13 +984,13 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     try {
       const AndroidNotificationDetails androidPlatformChannelSpecifics =
           AndroidNotificationDetails(
-            'weather_alerts',
-            'การแจ้งเตือนสภาพอากาศ',
-            channelDescription: 'การแจ้งเตือนเมื่อมีสภาพอากาศเสี่ยงภัย',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          );
+        'weather_alerts',
+        'การแจ้งเตือนสภาพอากาศ',
+        channelDescription: 'การแจ้งเตือนเมื่อมีสภาพอากาศเสี่ยงภัย',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
@@ -768,7 +1026,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
           IconButton(
             icon: Icon(Icons.my_location),
             onPressed: () async {
-              print('Location button pressed'); // เพิ่ม debug log
+              print('Location button pressed');
               await getCurrentLocation();
             },
             tooltip: 'ดึงตำแหน่งปัจจุบัน',
@@ -839,6 +1097,9 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
       child: Column(
         children: [
           _buildRegionSelector(),
+          _buildSearchBar(),
+          if (isSearching && filteredLocations.isNotEmpty)
+            _buildSearchResults(),
           Expanded(
             child: isLoading && weatherNews.isEmpty
                 ? Center(
@@ -870,6 +1131,60 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
                       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.white,
+      child: TextField(
+        controller: searchController,
+        decoration: InputDecoration(
+          hintText: 'ค้นหาจังหวัด/อำเภอ...',
+          prefixIcon: Icon(Icons.search, color: Colors.blue[600]),
+          suffixIcon: searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    searchController.clear();
+                    setState(() {
+                      isSearching = false;
+                      filteredLocations = [];
+                    });
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue[600]!, width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return Container(
+      color: Colors.white,
+      constraints: BoxConstraints(maxHeight: 200),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: filteredLocations.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: Icon(Icons.location_on, color: Colors.blue[600]),
+            title: Text(filteredLocations[index]),
+            onTap: () => _selectLocation(filteredLocations[index]),
+          );
+        },
       ),
     );
   }
@@ -925,7 +1240,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
                       weatherNews.clear();
                       weatherAlerts.clear();
                     });
-                    
+
                     if (apiKey != 'YOUR_OPENWEATHER_API_KEY') {
                       fetchAllWeatherData();
                     } else {
@@ -939,8 +1254,12 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
                     child: Text(
                       value,
                       style: TextStyle(
-                        color: value == selectedRegion ? Colors.blue[600] : Colors.grey[700],
-                        fontWeight: value == selectedRegion ? FontWeight.bold : FontWeight.normal,
+                        color: value == selectedRegion
+                            ? Colors.blue[600]
+                            : Colors.grey[700],
+                        fontWeight: value == selectedRegion
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   );
@@ -960,7 +1279,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                Icon(Icons.check_circle_outline,
+                    size: 64, color: Colors.green),
                 SizedBox(height: 16),
                 Text(
                   'ไม่มีการแจ้งเตือน',
@@ -1009,14 +1329,14 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
             itemBuilder: (context, index) {
               WeatherForecast forecast = weeklyForecast[index];
               bool isToday = index == 0;
-              
+
               return Card(
                 margin: EdgeInsets.only(bottom: 12),
                 elevation: isToday ? 6 : 3,
                 color: isToday ? Colors.blue[50] : null,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: isToday 
+                  side: isToday
                       ? BorderSide(color: Colors.blue[200]!, width: 2)
                       : BorderSide.none,
                 ),
@@ -1029,10 +1349,12 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
                         child: Column(
                           children: [
                             Text(
-                              isToday ? 'วันนี้' : _getDayName(forecast.date),
+                              isToday
+                                  ? 'วันนี้'
+                                  : _getDayName(forecast.date),
                               style: TextStyle(
-                                fontWeight: isToday 
-                                    ? FontWeight.bold 
+                                fontWeight: isToday
+                                    ? FontWeight.bold
                                     : FontWeight.w500,
                                 color: isToday ? Colors.blue[700] : null,
                               ),
@@ -1064,18 +1386,15 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
                             SizedBox(height: 4),
                             Row(
                               children: [
-                                Icon(Icons.water_drop, 
-                                     size: 16, 
-                                     color: Colors.blue),
+                                Icon(Icons.water_drop,
+                                    size: 16, color: Colors.blue),
                                 SizedBox(width: 4),
                                 Text(
                                   '${forecast.pop.toStringAsFixed(0)}%',
                                   style: TextStyle(fontSize: 12),
                                 ),
                                 SizedBox(width: 16),
-                                Icon(Icons.air, 
-                                     size: 16, 
-                                     color: Colors.grey),
+                                Icon(Icons.air, size: 16, color: Colors.grey),
                                 SizedBox(width: 4),
                                 Text(
                                   '${forecast.windSpeed.toStringAsFixed(1)} m/s',
@@ -1292,7 +1611,6 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
     );
   }
 
-  // COMPLETE HEALTH ADVICE CARD
   Widget _buildHealthAdviceCard() {
     return Card(
       elevation: 4,
@@ -1425,7 +1743,6 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
               ),
           ],
         ),
-        //
         SizedBox(height: 16),
         _buildNotificationCard(
           'การแจ้งเตือนพิเศษ',
@@ -1447,7 +1764,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
             ),
             SwitchListTile(
               title: Text('แจ้งเตือนอุณหภูมิสูง'),
-              subtitle: Text('เตือนเมื่ออุณหภูมิเกิน ${notificationSettings.temperatureThreshold.toStringAsFixed(0)}°C'),
+              subtitle: Text(
+                  'เตือนเมื่ออุณหภูมิเกิน ${notificationSettings.temperatureThreshold.toStringAsFixed(0)}°C'),
               value: notificationSettings.temperatureAlert,
               onChanged: (value) {
                 setState(() {
@@ -1460,7 +1778,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
             ),
             SwitchListTile(
               title: Text('แจ้งเตือน UV Index สูง'),
-              subtitle: Text('เตือนเมื่อ UV Index เกิน ${notificationSettings.uvThreshold}'),
+              subtitle: Text(
+                  'เตือนเมื่อ UV Index เกิน ${notificationSettings.uvThreshold}'),
               value: notificationSettings.uvAlert,
               onChanged: (value) {
                 setState(() {
@@ -1566,7 +1885,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
               min: 30,
               max: 45,
               divisions: 15,
-              label: '${notificationSettings.temperatureThreshold.toStringAsFixed(0)}°C',
+              label:
+                  '${notificationSettings.temperatureThreshold.toStringAsFixed(0)}°C',
               onChanged: (value) {
                 setState(() {
                   notificationSettings = notificationSettings.copyWith(
@@ -1615,12 +1935,18 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
 
   String _getPollutantName(String key) {
     switch (key) {
-      case 'co': return 'คาร์บอนมอนอกไซด์';
-      case 'no2': return 'ไนโตรเจนไดออกไซด์';
-      case 'o3': return 'โอโซน';
-      case 'pm2_5': return 'PM2.5';
-      case 'pm10': return 'PM10';
-      default: return key.toUpperCase();
+      case 'co':
+        return 'คาร์บอนมอนอกไซด์';
+      case 'no2':
+        return 'ไนโตรเจนไดออกไซด์';
+      case 'o3':
+        return 'โอโซน';
+      case 'pm2_5':
+        return 'PM2.5';
+      case 'pm10':
+        return 'PM10';
+      default:
+        return key.toUpperCase();
     }
   }
 
@@ -2029,7 +2355,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
           'weather': 'Rain',
           'description': 'ฝนฟ้าคะนอง',
           'category': 'ฝนตก',
-          'timestamp': DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
+          'timestamp':
+              DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
           'priority': 2,
           'icon': '🌧️',
         },
@@ -2051,7 +2378,8 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
           'message': 'มีฝนตกในพื้นที่เชียงใหม่ อย่าลืมเตรียมร่ม',
           'city': 'เชียงใหม่',
           'severity': 'low',
-          'timestamp': DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
+          'timestamp':
+              DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
         },
       ];
 
@@ -2062,12 +2390,15 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
           date: date,
           maxTemp: 34.0 + (index * 0.5) - (index > 3 ? 2 : 0),
           minTemp: 26.0 + (index * 0.3),
-          weather: index % 3 == 0 ? 'Rain' : (index % 2 == 0 ? 'Clouds' : 'Clear'),
-          description: index % 3 == 0 ? 'ฝนฟ้าคะนอง' : (index % 2 == 0 ? 'เมฆบางส่วน' : 'แสงแดดจัด'),
+          weather:
+              index % 3 == 0 ? 'Rain' : (index % 2 == 0 ? 'Clouds' : 'Clear'),
+          description: index % 3 == 0
+              ? 'ฝนฟ้าคะนอง'
+              : (index % 2 == 0 ? 'เมฆบางส่วน' : 'แสงแดดจัด'),
           icon: '01d',
-          humidity: 60 + (index * 3),
+          humidity: 60 + (index * 3).toDouble(),
           windSpeed: 2.5 + (index * 0.3),
-          pop: index % 3 == 0 ? 80 : (index % 2 == 0 ? 30 : 10),
+          pop: (index % 3 == 0 ? 80 : (index % 2 == 0 ? 30 : 10)).toDouble(),
         );
       });
 
@@ -2092,28 +2423,33 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
 
   void loadSampleDataForRegion(String region) {
     List<String> cities = regionCities[region] ?? ['เมืองตัวอย่าง'];
-    
+
     setState(() {
       weatherNews = cities.asMap().entries.map((entry) {
         int index = entry.key;
         String city = entry.value;
         double temp = 30.0 + (index * 2) + (region == 'ภาคใต้' ? -2 : 0);
-        
+
         return {
           'id': '${city}_sample',
-          'headline': temp > 35 ? 'อากาศร้อนจัดที่ $city ${temp.toStringAsFixed(1)}°C' : 'สภาพอากาศปกติที่ $city',
-          'content': 'รายงานสภาพอากาศจาก $city ณ วันที่ ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}\n\n'
-                    'สภาพอากาศ: ${temp > 35 ? "แสงแดดจัด" : "เมฆบางส่วน"}\n'
-                    'อุณหภูมิ: ${temp.toStringAsFixed(1)}°C\n'
-                    'ความชื้น: ${60 + (index * 5)}%\n'
-                    'ความเร็วลม: ${2.0 + (index * 0.5)} m/s\n\n'
-                    '${temp > 35 ? "คำแนะนำ: หลีกเลี่ยงการออกกลางแจ้งในช่วงเที่ยง" : "สภาพอากาศเหมาะสำหรับกิจกรรมกลางแจ้ง"}',
+          'headline': temp > 35
+              ? 'อากาศร้อนจัดที่ $city ${temp.toStringAsFixed(1)}°C'
+              : 'สภาพอากาศปกติที่ $city',
+          'content':
+              'รายงานสภาพอากาศจาก $city ณ วันที่ ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}\n\n'
+              'สภาพอากาศ: ${temp > 35 ? "แสงแดดจัด" : "เมฆบางส่วน"}\n'
+              'อุณหภูมิ: ${temp.toStringAsFixed(1)}°C\n'
+              'ความชื้น: ${60 + (index * 5)}%\n'
+              'ความเร็วลม: ${2.0 + (index * 0.5)} m/s\n\n'
+              '${temp > 35 ? "คำแนะนำ: หลีกเลี่ยงการออกกลางแจ้งในช่วงเที่ยง" : "สภาพอากาศเหมาะสำหรับกิจกรรมกลางแจ้ง"}',
           'city': city,
           'temperature': temp,
           'weather': temp > 35 ? 'Clear' : 'Clouds',
           'description': temp > 35 ? 'แสงแดดจัด' : 'เมฆบางส่วน',
           'category': temp > 35 ? 'อันตราย' : 'ปกติ',
-          'timestamp': DateTime.now().subtract(Duration(minutes: index * 15)).toIso8601String(),
+          'timestamp': DateTime.now()
+              .subtract(Duration(minutes: index * 15))
+              .toIso8601String(),
           'priority': temp > 35 ? 2 : 1,
           'icon': temp > 35 ? '☀️' : '☁️',
         };
@@ -2127,13 +2463,60 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
           weatherAlerts.add({
             'id': '${cities[i]}_temp_alert',
             'type': 'อุณหภูมิสูง',
-            'message': 'อุณหภูมิในพื้นที่${cities[i]} สูงถึง ${temp.toStringAsFixed(1)}°C โปรดระวังโรคลมแดด',
+            'message':
+                'อุณหภูมิในพื้นที่${cities[i]} สูงถึง ${temp.toStringAsFixed(1)}°C โปรดระวังโรคลมแดด',
             'city': cities[i],
             'severity': temp > 38 ? 'high' : 'medium',
-            'timestamp': DateTime.now().subtract(Duration(minutes: i * 10)).toIso8601String(),
+            'timestamp': DateTime.now()
+                .subtract(Duration(minutes: i * 10))
+                .toIso8601String(),
           });
         }
       }
+    });
+  }
+
+  void loadSampleDataForCity(String city) {
+    double temp = 32.0 + (city.hashCode % 10);
+
+    setState(() {
+      weatherNews = [
+        {
+          'id': '${city}_sample',
+          'headline': temp > 35
+              ? 'อากาศร้อนจัดที่ $city ${temp.toStringAsFixed(1)}°C'
+              : 'สภาพอากาศปกติที่ $city ${temp.toStringAsFixed(1)}°C',
+          'content':
+              'รายงานสภาพอากาศจาก $city ณ วันที่ ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}\n\n'
+              'สภาพอากาศ: ${temp > 35 ? "แสงแดดจัด" : "เมฆบางส่วน"}\n'
+              'อุณหภูมิ: ${temp.toStringAsFixed(1)}°C\n'
+              'ความชื้น: ${65 + (city.hashCode % 20)}%\n'
+              'ความเร็วลม: ${3.0 + (city.hashCode % 5) * 0.5} m/s\n\n'
+              '${temp > 35 ? "คำแนะนำ: หลีกเลี่ยงการออกกลางแจ้งในช่วงเที่ยง ดื่มน้ำเพียงพอ" : "สภาพอากาศเหมาะสำหรับกิจกรรมกลางแจ้ง"}',
+          'city': city,
+          'temperature': temp,
+          'weather': temp > 35 ? 'Clear' : 'Clouds',
+          'description': temp > 35 ? 'แสงแดดจัด' : 'เมฆบางส่วน',
+          'category': temp > 35 ? 'อันตราย' : 'ปกติ',
+          'timestamp': DateTime.now().toIso8601String(),
+          'priority': temp > 35 ? 2 : 1,
+          'icon': temp > 35 ? '☀️' : '☁️',
+        },
+      ];
+
+      weatherAlerts = temp > 35
+          ? [
+              {
+                'id': '${city}_temp_alert',
+                'type': 'อุณหภูมิสูง',
+                'message':
+                    'อุณหภูมิในพื้นที่$city สูงถึง ${temp.toStringAsFixed(1)}°C โปรดระวังโรคลมแดด',
+                'city': city,
+                'severity': temp > 38 ? 'high' : 'medium',
+                'timestamp': DateTime.now().toIso8601String(),
+              }
+            ]
+          : [];
     });
   }
 
@@ -2141,6 +2524,7 @@ class _EnhancedNewsScreenState extends State<EnhancedNewsScreen>
   void dispose() {
     newsTimer?.cancel();
     scheduledNotificationTimer?.cancel();
+    searchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
