@@ -22,7 +22,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
          channel: stable
-         flutter-version: '3.13.2'
+         flutter-version: '3.19.6' #แก้ล่าสุด
 
 
       # 3️⃣ ตรวจสอบ Flutter environment
