@@ -21,7 +21,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6'  # ✅ ใช้ตามที่แนะนำ
+          flutter-version: '3.29.1'  # ✅ ใช้ตามที่แนะนำ
           channel: stable
 
       # 3️⃣ Flutter Doctor
