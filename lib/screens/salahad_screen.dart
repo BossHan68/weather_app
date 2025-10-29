@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
-// import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_compass/flutter_compass.dart';
+import 'package:flutter_compass_v2/flutter_compass_v2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -101,7 +100,7 @@ class _SalahadScreenState extends State<SalahadScreen> {
   }
 }
 
-// ================= Prayer Times Screen (ไม่เปลี่ยนแปลง) =================
+// ================= Prayer Times Screen =================
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
 
@@ -123,30 +122,81 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   String selectedCountry = "Thailand";
 
   final List<Map<String, String>> cityOptions = [
-    {"city": "Bangkok", "country": "Thailand"},
-    {"city": "Chiang Mai", "country": "Thailand"},
-    {"city": "Chiang Rai", "country": "Thailand"},
-    {"city": "Lampang", "country": "Thailand"},
-    {"city": "Mae Hong Son", "country": "Thailand"},
-    {"city": "Nonthaburi", "country": "Thailand"},
-    {"city": "Pathum Thani", "country": "Thailand"},
-    {"city": "Samut Prakan", "country": "Thailand"},
-    {"city": "Ayutthaya", "country": "Thailand"},
-    {"city": "Khon Kaen", "country": "Thailand"},
-    {"city": "Nakhon Ratchasima", "country": "Thailand"},
-    {"city": "Udon Thani", "country": "Thailand"},
-    {"city": "Ubon Ratchathani", "country": "Thailand"},
-    {"city": "Hat Yai", "country": "Thailand"},
-    {"city": "Phuket", "country": "Thailand"},
-    {"city": "Surat Thani", "country": "Thailand"},
-    {"city": "Songkhla", "country": "Thailand"},
-    {"city": "Pattani", "country": "Thailand"},
-    {"city": "Yala", "country": "Thailand"},
-    {"city": "Narathiwat", "country": "Thailand"},
-    {"city": "Mecca", "country": "Saudi Arabia"},
-    {"city": "Medina", "country": "Saudi Arabia"},
-    {"city": "Jakarta", "country": "Indonesia"},
-    {"city": "Kuala Lumpur", "country": "Malaysia"},
+    {"city": "Bangkok", "country": "Thailand", "thaiName": "กรุงเทพมหานคร"},
+    {"city": "Chiang Mai", "country": "Thailand", "thaiName": "เชียงใหม่"},
+    {"city": "Chiang Rai", "country": "Thailand", "thaiName": "เชียงราย"},
+    {"city": "Nakhon Ratchasima", "country": "Thailand", "thaiName": "นครราชสีมา"},
+    {"city": "Khon Kaen", "country": "Thailand", "thaiName": "ขอนแก่น"},
+    {"city": "Udon Thani", "country": "Thailand", "thaiName": "อุดรธานี"},
+    {"city": "Ubon Ratchathani", "country": "Thailand", "thaiName": "อุบลราชธานี"},
+    {"city": "Nakhon Si Thammarat", "country": "Thailand", "thaiName": "นครศรีธรรมราช"},
+    {"city": "Phuket", "country": "Thailand", "thaiName": "ภูเก็ต"},
+    {"city": "Hat Yai", "country": "Thailand", "thaiName": "หาดใหญ่"},
+    {"city": "Songkhla", "country": "Thailand", "thaiName": "สงขลา"},
+    {"city": "Pattani", "country": "Thailand", "thaiName": "ปัตตานี"},
+    {"city": "Yala", "country": "Thailand", "thaiName": "ยะลา"},
+    {"city": "Narathiwat", "country": "Thailand", "thaiName": "นราธิวาส"},
+    {"city": "Satun", "country": "Thailand", "thaiName": "สตูล"},
+    {"city": "Surat Thani", "country": "Thailand", "thaiName": "สุราษฎร์ธานี"},
+    {"city": "Krabi", "country": "Thailand", "thaiName": "กระบี่"},
+    {"city": "Phangnga", "country": "Thailand", "thaiName": "พังงา"},
+    {"city": "Ranong", "country": "Thailand", "thaiName": "ระนอง"},
+    {"city": "Chumphon", "country": "Thailand", "thaiName": "ชุมพร"},
+    {"city": "Prachuap Khiri Khan", "country": "Thailand", "thaiName": "ประจวบคีรีขันธ์"},
+    {"city": "Phetchaburi", "country": "Thailand", "thaiName": "เพชรบุรี"},
+    {"city": "Ratchaburi", "country": "Thailand", "thaiName": "ราชบุรี"},
+    {"city": "Kanchanaburi", "country": "Thailand", "thaiName": "กาญจนบุรี"},
+    {"city": "Suphan Buri", "country": "Thailand", "thaiName": "สุพรรณบุรี"},
+    {"city": "Nakhon Pathom", "country": "Thailand", "thaiName": "นครปฐม"},
+    {"city": "Samut Sakhon", "country": "Thailand", "thaiName": "สมุทรสาคร"},
+    {"city": "Samut Songkhram", "country": "Thailand", "thaiName": "สมุทรสงคราม"},
+    {"city": "Samut Prakan", "country": "Thailand", "thaiName": "สมุทรปราการ"},
+    {"city": "Nonthaburi", "country": "Thailand", "thaiName": "นนทบุรี"},
+    {"city": "Pathum Thani", "country": "Thailand", "thaiName": "ปทุมธานี"},
+    {"city": "Ayutthaya", "country": "Thailand", "thaiName": "พระนครศรีอยุธยา"},
+    {"city": "Lopburi", "country": "Thailand", "thaiName": "ลพบุรี"},
+    {"city": "Saraburi", "country": "Thailand", "thaiName": "สระบุรี"},
+    {"city": "Nakhon Nayok", "country": "Thailand", "thaiName": "นครนายก"},
+    {"city": "Prachuap", "country": "Thailand", "thaiName": "ประจวบ"},
+    {"city": "Chonburi", "country": "Thailand", "thaiName": "ชลบุรี"},
+    {"city": "Rayong", "country": "Thailand", "thaiName": "ระยอง"},
+    {"city": "Chanthaburi", "country": "Thailand", "thaiName": "จันทบุรี"},
+    {"city": "Trat", "country": "Thailand", "thaiName": "ตราด"},
+    {"city": "Sa Kaeo", "country": "Thailand", "thaiName": "สระแก้ว"},
+    {"city": "Nakhon Sawan", "country": "Thailand", "thaiName": "นครสวรรค์"},
+    {"city": "Uthai Thani", "country": "Thailand", "thaiName": "อุทัยธานี"},
+    {"city": "Chainat", "country": "Thailand", "thaiName": "ชัยนาท"},
+    {"city": "Singburi", "country": "Thailand", "thaiName": "สิงห์บุรี"},
+    {"city": "Angthong", "country": "Thailand", "thaiName": "อ่างทอง"},
+    {"city": "Phitsanulok", "country": "Thailand", "thaiName": "พิษณุโลก"},
+    {"city": "Phichit", "country": "Thailand", "thaiName": "พิจิตร"},
+    {"city": "Kamphaeng Phet", "country": "Thailand", "thaiName": "กำแพงเพชร"},
+    {"city": "Tak", "country": "Thailand", "thaiName": "ตาก"},
+    {"city": "Sukhothai", "country": "Thailand", "thaiName": "สุโขทัย"},
+    {"city": "Uttaradit", "country": "Thailand", "thaiName": "อุตรดิตถ์"},
+    {"city": "Phrae", "country": "Thailand", "thaiName": "แพร่"},
+    {"city": "Nan", "country": "Thailand", "thaiName": "น่าน"},
+    {"city": "Phayao", "country": "Thailand", "thaiName": "พะเยา"},
+    {"city": "Lampang", "country": "Thailand", "thaiName": "ลำปาง"},
+    {"city": "Lamphun", "country": "Thailand", "thaiName": "ลำพูน"},
+    {"city": "Mae Hong Son", "country": "Thailand", "thaiName": "แม่ฮ่องสอน"},
+    {"city": "Loei", "country": "Thailand", "thaiName": "เลย"},
+    {"city": "Nong Khai", "country": "Thailand", "thaiName": "หนองคาย"},
+    {"city": "Nong Bua Lam Phu", "country": "Thailand", "thaiName": "หนองบัวลำภู"},
+    {"city": "Sakon Nakhon", "country": "Thailand", "thaiName": "สกลนคร"},
+    {"city": "Nakhon Phanom", "country": "Thailand", "thaiName": "นครพนม"},
+    {"city": "Mukdahan", "country": "Thailand", "thaiName": "มุกดาหาร"},
+    {"city": "Kalasin", "country": "Thailand", "thaiName": "กาฬสินธุ์"},
+    {"city": "Roi Et", "country": "Thailand", "thaiName": "ร้อยเอ็ด"},
+    {"city": "Maha Sarakham", "country": "Thailand", "thaiName": "มหาสารคาม"},
+    {"city": "Yasothon", "country": "Thailand", "thaiName": "ยโสธร"},
+    {"city": "Amnat Charoen", "country": "Thailand", "thaiName": "อำนาจเจริญ"},
+    {"city": "Sisaket", "country": "Thailand", "thaiName": "ศรีสะเกษ"},
+    {"city": "Surin", "country": "Thailand", "thaiName": "สุรินทร์"},
+    {"city": "Buriram", "country": "Thailand", "thaiName": "บุรีรัมย์"},
+    {"city": "Chaiyaphum", "country": "Thailand", "thaiName": "ชัยภูมิ"},
+    {"city": "Phatthalung", "country": "Thailand", "thaiName": "พัทลุง"},
+    {"city": "Trang", "country": "Thailand", "thaiName": "ตรัง"},
   ];
 
   List<Map<String, String>> filteredCities = [];
@@ -175,18 +225,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   void _updateCurrentDate() {
     final now = DateTime.now();
     final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
     ];
     currentDate = "${now.day} ${months[now.month - 1]} ${now.year}";
   }
@@ -197,18 +237,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         filteredCities = cityOptions;
         isSearching = false;
       } else {
-        filteredCities =
-            cityOptions
-                .where(
-                  (city) =>
-                      city["city"]!.toLowerCase().contains(
-                        query.toLowerCase(),
-                      ) ||
-                      city["country"]!.toLowerCase().contains(
-                        query.toLowerCase(),
-                      ),
-                )
-                .toList();
+        final lowerQuery = query.toLowerCase();
+        filteredCities = cityOptions.where((city) {
+          return city["city"]!.toLowerCase().contains(lowerQuery) ||
+                 city["thaiName"]!.contains(query) ||
+                 city["country"]!.toLowerCase().contains(lowerQuery);
+        }).toList();
         isSearching = true;
       }
     });
@@ -362,434 +396,413 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             end: Alignment.bottomCenter,
           ),
         ),
-        child:
-            isLoading
-                ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: Color(0xFF2E7D32)),
-                      SizedBox(height: 16),
-                      Text(
-                        "Loading prayer times...",
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+        child: isLoading
+            ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: Color(0xFF2E7D32)),
+                    SizedBox(height: 16),
+                    Text(
+                      "Loading prayer times...",
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+                  ],
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Card(
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    ],
-                  ),
-                )
-                : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Card(
-                        elevation: 6,
-                        shape: RoundedRectangleBorder(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            gradient: const LinearGradient(
-                              colors: [Colors.white, Color(0xFFF8F9FA)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                          gradient: const LinearGradient(
+                            colors: [Colors.white, Color(0xFFF8F9FA)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        currentDate,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.location_on,
-                                            color: Colors.green[600],
-                                            size: 16,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            currentCity,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  if (_getNextPrayer().isNotEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange[100],
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "Next",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.orange[800],
-                                            ),
-                                          ),
-                                          Text(
-                                            _getNextPrayer(),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.orange[800],
-                                            ),
-                                          ),
-                                        ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      currentDate,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
                                       ),
                                     ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on,
+                                          color: Colors.green[600],
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          currentCity,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                if (_getNextPrayer().isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange[100],
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          "Next",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.orange[800],
+                                          ),
+                                        ),
+                                        Text(
+                                          _getNextPrayer(),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.orange[800],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                      Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.location_city,
+                                  color: Colors.green[700],
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "เลือกสถานที่",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            TextField(
+                              controller: _searchController,
+                              onChanged: _filterCities,
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "ค้นหาจังหวัด เมือง...",
+                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.green[600],
+                                ),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          _filterCities('');
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.location_on,
+                                        color: Colors.green[400],
+                                      ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.green[300]!,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.green[600]!,
+                                    width: 2,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green[200]!),
+                              ),
+                              child: Row(
                                 children: [
                                   Icon(
-                                    Icons.location_city,
-                                    color: Colors.green[700],
+                                    Icons.location_on,
+                                    color: Colors.green[600],
+                                    size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
-                                    "Select Location",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-
-                              TextField(
-                                controller: _searchController,
-                                onChanged: _filterCities,
-                                style: const TextStyle(color: Colors.black87),
-                                decoration: InputDecoration(
-                                  hintText: "Search city, province...",
-                                  hintStyle: TextStyle(color: Colors.grey[500]),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: Colors.green[600],
-                                  ),
-                                  suffixIcon:
-                                      _searchController.text.isNotEmpty
-                                          ? IconButton(
-                                            icon: const Icon(Icons.clear),
-                                            onPressed: () {
-                                              _searchController.clear();
-                                              _filterCities('');
-                                            },
-                                          )
-                                          : Icon(
-                                            Icons.location_on,
-                                            color: Colors.green[400],
-                                          ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: Colors.green[300]!,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: Colors.green[600]!,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.green[200]!),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.location_on,
-                                      color: Colors.green[600],
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      "Selected: $selectedCity, $selectedCountry",
+                                  Expanded(
+                                    child: Text(
+                                      "เลือก: ${cityOptions.firstWhere((c) => c['city'] == selectedCity)['thaiName']}",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         color: Colors.green[800],
                                       ),
                                     ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            if (isSearching && filteredCities.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.green[300]!,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListView.builder(
+                                  itemCount: filteredCities.length,
+                                  itemBuilder: (context, index) {
+                                    final city = filteredCities[index];
+                                    return ListTile(
+                                      dense: true,
+                                      leading: Icon(
+                                        Icons.location_city,
+                                        color: Colors.green[600],
+                                        size: 16,
+                                      ),
+                                      title: Text(
+                                        "${city["thaiName"]} (${city["city"]})",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        setState(() {
+                                          selectedCity = city["city"]!;
+                                          selectedCountry = city["country"]!;
+                                          isSearching = false;
+                                          _searchController.clear();
+                                          filteredCities = cityOptions;
+                                        });
+                                        _getLocationAndPrayerTimes();
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+
+                            if (currentPosition != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                "GPS: ${currentPosition!.latitude.toStringAsFixed(4)}, ${currentPosition!.longitude.toStringAsFixed(4)}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+
+                            if (errorMsg != null) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.warning,
+                                      color: Colors.orange[700],
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        errorMsg!,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.orange[800],
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-
-                              if (isSearching && filteredCities.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Container(
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.green[300]!,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: ListView.builder(
-                                    itemCount: filteredCities.length,
-                                    itemBuilder: (context, index) {
-                                      final city = filteredCities[index];
-                                      return ListTile(
-                                        dense: true,
-                                        leading: Icon(
-                                          Icons.location_city,
-                                          color: Colors.green[600],
-                                          size: 16,
-                                        ),
-                                        title: Text(
-                                          "${city["city"]}, ${city["country"]}",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          setState(() {
-                                            selectedCity = city["city"]!;
-                                            selectedCountry = city["country"]!;
-                                            isSearching = false;
-                                            _searchController.clear();
-                                          });
-                                          _getLocationAndPrayerTimes();
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-
-                              if (currentPosition != null) ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  "GPS: ${currentPosition!.latitude.toStringAsFixed(4)}, ${currentPosition!.longitude.toStringAsFixed(4)}",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-
-                              if (errorMsg != null) ...[
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange[100],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.warning,
-                                        color: Colors.orange[700],
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          errorMsg!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.orange[800],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                      ...prayerTimes.entries.map((entry) {
-                        final prayerIcons = {
-                          "Fajr": Icons.brightness_2,
-                          "Dhuhr": Icons.wb_sunny,
-                          "Asr": Icons.wb_cloudy,
-                          "Maghrib": Icons.brightness_3,
-                          "Isha": Icons.brightness_2,
-                        };
+                    ...prayerTimes.entries.map((entry) {
+                      final prayerIcons = {
+                        "Fajr": Icons.brightness_2,
+                        "Dhuhr": Icons.wb_sunny,
+                        "Asr": Icons.wb_cloudy,
+                        "Maghrib": Icons.brightness_3,
+                        "Isha": Icons.brightness_2,
+                      };
 
-                        final prayerColors = {
-                          "Fajr": Colors.indigo,
-                          "Dhuhr": Colors.orange,
-                          "Asr": Colors.amber,
-                          "Maghrib": Colors.deepOrange,
-                          "Isha": Colors.purple,
-                        };
+                      final prayerColors = {
+                        "Fajr": Colors.indigo,
+                        "Dhuhr": Colors.orange,
+                        "Asr": Colors.amber,
+                        "Maghrib": Colors.deepOrange,
+                        "Isha": Colors.purple,
+                      };
 
-                        final isNext = _getNextPrayer() == entry.key;
+                      final isNext = _getNextPrayer() == entry.key;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Card(
-                            elevation: isNext ? 8 : 3,
-                            shape: RoundedRectangleBorder(
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Card(
+                          elevation: isNext ? 8 : 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                gradient: LinearGradient(
-                                  colors:
-                                      isNext
-                                          ? [
-                                            Colors.green[100]!,
-                                            Colors.green[50]!,
-                                          ]
-                                          : [
-                                            Colors.white,
-                                            const Color(0xFFF8F9FA),
-                                          ],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                border:
-                                    isNext
-                                        ? Border.all(
-                                          color: Colors.green[400]!,
-                                          width: 2,
-                                        )
-                                        : null,
+                              gradient: LinearGradient(
+                                colors: isNext
+                                    ? [Colors.green[100]!, Colors.green[50]!]
+                                    : [Colors.white, const Color(0xFFF8F9FA)],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
                               ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
+                              border: isNext
+                                  ? Border.all(
+                                      color: Colors.green[400]!,
+                                      width: 2,
+                                    )
+                                  : null,
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              leading: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: prayerColors[entry.key]!.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                leading: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: prayerColors[entry.key]!.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    prayerIcons[entry.key]!,
-                                    color: prayerColors[entry.key]!,
-                                    size: 24,
-                                  ),
+                                child: Icon(
+                                  prayerIcons[entry.key]!,
+                                  color: prayerColors[entry.key]!,
+                                  size: 24,
                                 ),
-                                title: Text(
-                                  entry.key,
+                              ),
+                              title: Text(
+                                entry.key,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: isNext ? Colors.green[800] : Colors.black87,
+                                ),
+                              ),
+                              subtitle: isNext
+                                  ? Text(
+                                      "Next Prayer",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    )
+                                  : null,
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isNext ? Colors.green[200] : Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Text(
+                                  entry.value.substring(0, 5),
                                   style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        isNext
-                                            ? Colors.green[800]
-                                            : Colors.black87,
-                                  ),
-                                ),
-                                subtitle:
-                                    isNext
-                                        ? Text(
-                                          "Next Prayer",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.green[600],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        )
-                                        : null,
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        isNext
-                                            ? Colors.green[200]
-                                            : Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: Text(
-                                    entry.value.substring(0, 5),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          isNext
-                                              ? Colors.green[800]
-                                              : Colors.black87,
-                                    ),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isNext ? Colors.green[800] : Colors.black87,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
                 ),
+              ),
       ),
     );
   }
@@ -806,10 +819,17 @@ class QiblaCompassScreen extends StatefulWidget {
 class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
   double? qiblaDirection;
   double? currentHeading = 0.0;
+  double smoothedHeading = 0.0;
   bool isLoading = true;
   String? errorMsg;
   Position? currentPosition;
   StreamSubscription<CompassEvent>? _compassSubscription;
+  bool isCalibrating = false;
+  int compassAccuracy = 0;
+
+  // Smoothing parameters
+  final List<double> _headingHistory = [];
+  static const int _historySize = 5;
 
   @override
   void initState() {
@@ -821,10 +841,37 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
   void _startCompassListener() {
     _compassSubscription = FlutterCompass.events?.listen((event) {
       if (mounted && event.heading != null) {
-        setState(() {
-          currentHeading = event.heading!;
-        });
+        _updateHeading(event.heading!);
+        
+        // Update accuracy indicator
+        if (event.accuracy != null) {
+          setState(() {
+            compassAccuracy = event.accuracy!.toInt();
+          });
+        }
       }
+    });
+  }
+
+  void _updateHeading(double newHeading) {
+    // Add to history
+    _headingHistory.add(newHeading);
+    if (_headingHistory.length > _historySize) {
+      _headingHistory.removeAt(0);
+    }
+
+    // Calculate smoothed heading using weighted average
+    double sum = 0;
+    double weightSum = 0;
+    for (int i = 0; i < _headingHistory.length; i++) {
+      double weight = (i + 1).toDouble(); // More recent values have higher weight
+      sum += _headingHistory[i] * weight;
+      weightSum += weight;
+    }
+
+    setState(() {
+      currentHeading = newHeading;
+      smoothedHeading = sum / weightSum;
     });
   }
 
@@ -885,39 +932,13 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
 
       setState(() {
         currentPosition = position;
+        qiblaDirection = _calculateQiblaDirection(
+          position.latitude,
+          position.longitude,
+        );
+        errorMsg = null;
       });
-
-      try {
-        final qiblaUrl =
-            "https://api.aladhan.com/v1/qibla/${position.latitude}/${position.longitude}";
-        final qiblaRes = await http
-            .get(Uri.parse(qiblaUrl))
-            .timeout(const Duration(seconds: 10));
-
-        if (qiblaRes.statusCode == 200) {
-          final qiblaData = jsonDecode(qiblaRes.body);
-          if (qiblaData["code"] == 200 && qiblaData["data"] != null) {
-            setState(() {
-              qiblaDirection = qiblaData["data"]["direction"] * 1.0;
-              errorMsg = null;
-            });
-          } else {
-            throw Exception("API returned invalid data");
-          }
-        } else {
-          throw Exception("HTTP ${qiblaRes.statusCode}");
-        }
-      } catch (e) {
-        setState(() {
-          qiblaDirection = _calculateQiblaDirection(
-            position.latitude,
-            position.longitude,
-          );
-          errorMsg = "ใช้การคำนวณออฟไลน์";
-        });
-      }
-    }
-    catch (e) {
+    } catch (e) {
       setState(() => errorMsg = "ข้อผิดพลาด: ${e.toString()}");
     } finally {
       setState(() => isLoading = false);
@@ -925,9 +946,33 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
   }
 
   bool get _isAligned {
-    if (qiblaDirection == null || currentHeading == null) return false;
-    final diff = ((qiblaDirection! - currentHeading!) % 360).abs();
-    return diff < 8 || diff > 352;
+    if (qiblaDirection == null || smoothedHeading == null) return false;
+    double diff = ((qiblaDirection! - smoothedHeading) % 360).abs();
+    if (diff > 180) diff = 360 - diff;
+    return diff < 5; // Within 5 degrees
+  }
+
+  double get _angleDifference {
+    if (qiblaDirection == null || smoothedHeading == null) return 0;
+    double diff = (qiblaDirection! - smoothedHeading) % 360;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  }
+
+  void _startCalibration() {
+    setState(() {
+      isCalibrating = true;
+    });
+    
+    // Auto-stop calibration after 8 seconds
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted) {
+        setState(() {
+          isCalibrating = false;
+        });
+      }
+    });
   }
 
   @override
@@ -935,7 +980,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Qibla Compass",
+          "เข็มทิศกิบลัต",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         flexibleSpace: Container(
@@ -951,6 +996,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
           IconButton(
             onPressed: _getQiblaDirection,
             icon: const Icon(Icons.refresh, color: Colors.white),
+            tooltip: "รีเฟรช",
           ),
         ],
       ),
@@ -980,6 +1026,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    // Location Info Card
                     if (currentPosition != null)
                       Card(
                         elevation: 4,
@@ -1046,8 +1093,46 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                         ),
                       ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
+                    // Calibration Card
+                    if (isCalibrating)
+                      Card(
+                        elevation: 4,
+                        color: Colors.blue[50],
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              Icon(Icons.screen_rotation, 
+                                   color: Colors.blue[700], size: 40),
+                              const SizedBox(height: 8),
+                              Text(
+                                "กำลังปรับเทียบเข็มทิศ",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[900],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "หมุนโทรศัพท์เป็นวงกลม 2-3 รอบ",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const LinearProgressIndicator(),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    if (isCalibrating) const SizedBox(height: 16),
+
+                    // Error Message
                     if (errorMsg != null)
                       Card(
                         elevation: 2,
@@ -1055,30 +1140,18 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: errorMsg!.contains("ออฟไลน์")
-                                ? Colors.orange[50]
-                                : Colors.red[50],
+                            color: Colors.red[50],
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                errorMsg!.contains("ออฟไลน์")
-                                    ? Icons.info
-                                    : Icons.error,
-                                color: errorMsg!.contains("ออฟไลน์")
-                                    ? Colors.orange[700]
-                                    : Colors.red[600],
-                                size: 20,
-                              ),
+                              Icon(Icons.error, color: Colors.red[600], size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   errorMsg!,
                                   style: TextStyle(
-                                    color: errorMsg!.contains("ออฟไลน์")
-                                        ? Colors.orange[700]
-                                        : Colors.red[700],
+                                    color: Colors.red[700],
                                     fontSize: 14,
                                   ),
                                 ),
@@ -1090,7 +1163,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
 
                     if (errorMsg != null) const SizedBox(height: 16),
 
-                    // Enhanced Compass
+                    // Main Compass Card
                     Card(
                       elevation: 12,
                       shape: RoundedRectangleBorder(
@@ -1109,6 +1182,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                         ),
                         child: Column(
                           children: [
+                            // Status Header
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -1129,23 +1203,36 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Text(
-                                  _isAligned
-                                      ? "ตรงทิศกิบลัตแล้ว!"
-                                      : "ทิศทางไปยังกะอบะห์",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: _isAligned
-                                        ? Colors.green[800]
-                                        : Colors.grey[800],
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _isAligned
+                                          ? "ตรงทิศกิบลัตแล้ว!"
+                                          : "หมุนไปหาทิศกิบลัต",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: _isAligned
+                                            ? Colors.green[800]
+                                            : Colors.grey[800],
+                                      ),
+                                    ),
+                                    if (!_isAligned && qiblaDirection != null)
+                                      Text(
+                                        "เหลือ ${_angleDifference.abs().toStringAsFixed(0)}°",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),
                             const SizedBox(height: 24),
 
-                            // Golden Compass Design
+                            // Compass
                             Stack(
                               alignment: Alignment.center,
                               children: [
@@ -1173,7 +1260,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                   ),
                                 ),
 
-                                // Inner compass face (cream/beige)
+                                // Inner compass face
                                 Container(
                                   width: 270,
                                   height: 270,
@@ -1196,21 +1283,31 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                   ),
                                   child: CustomPaint(
                                     painter: GoldenCompassFacePainter(
-                                      currentHeading: currentHeading ?? 0,
+                                      currentHeading: smoothedHeading,
                                     ),
                                   ),
                                 ),
 
-                                // Compass needle (rotates based on Qibla and current heading)
-                                if (qiblaDirection != null && currentHeading != null)
-                                  Transform.rotate(
-                                    angle: (qiblaDirection! - currentHeading!) * pi / 180,
-                                    child: CustomPaint(
-                                      size: const Size(200, 200),
-                                      painter: GoldenCompassNeedlePainter(
-                                        isAligned: _isAligned,
-                                      ),
+                                // Compass needle
+                                if (qiblaDirection != null)
+                                  TweenAnimationBuilder<double>(
+                                    tween: Tween<double>(
+                                      begin: 0,
+                                      end: (qiblaDirection! - smoothedHeading) * pi / 180,
                                     ),
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOut,
+                                    builder: (context, angle, child) {
+                                      return Transform.rotate(
+                                        angle: angle,
+                                        child: CustomPaint(
+                                          size: const Size(200, 200),
+                                          painter: GoldenCompassNeedlePainter(
+                                            isAligned: _isAligned,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
 
                                 // Center golden button
@@ -1243,6 +1340,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
 
                             const SizedBox(height: 24),
 
+                            // Direction Info
                             if (qiblaDirection != null) ...[
                               Container(
                                 padding: const EdgeInsets.all(16),
@@ -1282,24 +1380,49 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                     else
                                       Column(
                                         children: [
-                                          Text(
-                                            "ทิศกิบลัต: ${qiblaDirection!.toStringAsFixed(1)}°",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.blue[700],
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          if (currentHeading != null) ...[
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              "ทิศทางปัจจุบัน: ${currentHeading!.toStringAsFixed(1)}°",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey[600],
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  Text(
+                                                    "ทิศกิบลัต",
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${qiblaDirection!.toStringAsFixed(1)}°",
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.blue[700],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ),
-                                          ],
+                                              Column(
+                                                children: [
+                                                  Text(
+                                                    "ทิศปัจจุบัน",
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${smoothedHeading.toStringAsFixed(1)}°",
+                                                    style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                   ],
@@ -1309,6 +1432,28 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
 
                             const SizedBox(height: 16),
 
+                            // Calibration Button
+                            if (!isCalibrating)
+                              ElevatedButton.icon(
+                                onPressed: _startCalibration,
+                                icon: const Icon(Icons.settings_backup_restore),
+                                label: const Text("ปรับเทียบเข็มทิศ"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue[600],
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                ),
+                              ),
+
+                            const SizedBox(height: 16),
+
+                            // Instructions
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -1328,7 +1473,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       const Text(
-                                        "วิธีใช้:",
+                                        "วิธีใช้งาน:",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black87,
@@ -1339,14 +1484,15 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
                                   const SizedBox(height: 8),
                                   const Text(
                                     "• ถือมือถือให้เรียบและระดับ\n"
-                                    "• หมุนตัวเองช้าๆ (ไม่ใช่หมุนหน้าจอ)\n"
-                                    "• เข็มสีแดงจะชี้ไปทิศกิบลัต\n"
-                                    "• เมื่อตรงทิศ จะแจ้งเตือน\n"
+                                    "• หมุนตัวเองช้าๆ ตามทิศที่เข็มชี้\n"
+                                    "• เข็มสีแดง/เขียวชี้ไปทิศกิบลัต\n"
+                                    "• เมื่อตรงทิศจะแจ้งเตือน\n"
+                                    "• หากเข็มไม่แม่นให้กดปรับเทียบ\n"
                                     "• หลีกเลี่ยงสิ่งที่มีแม่เหล็ก",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.black87,
-                                      height: 1.4,
+                                      height: 1.5,
                                     ),
                                   ),
                                 ],
@@ -1375,12 +1521,12 @@ class GoldenCompassFacePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // Draw degree markers (360 small lines)
+    // Draw degree markers
     for (int i = 0; i < 72; i++) {
       final angle = (i * 5.0 - currentHeading) * pi / 180;
-      final isMainDirection = i % 18 == 0; // Every 90 degrees
-      final isSecondary = i % 9 == 0; // Every 45 degrees
-      final isTertiary = i % 3 == 0; // Every 15 degrees
+      final isMainDirection = i % 18 == 0;
+      final isSecondary = i % 9 == 0;
+      final isTertiary = i % 3 == 0;
 
       double lineLength;
       double lineWidth;
@@ -1389,15 +1535,15 @@ class GoldenCompassFacePainter extends CustomPainter {
       if (isMainDirection) {
         lineLength = 25;
         lineWidth = 3;
-        lineColor = const Color(0xFF8B4513); // Brown
+        lineColor = const Color(0xFF8B4513);
       } else if (isSecondary) {
         lineLength = 18;
         lineWidth = 2.5;
-        lineColor = const Color(0xFFB8860B); // Dark golden
+        lineColor = const Color(0xFFB8860B);
       } else if (isTertiary) {
         lineLength = 12;
         lineWidth = 2;
-        lineColor = const Color(0xFFDAA520); // Golden
+        lineColor = const Color(0xFFDAA520);
       } else {
         lineLength = 8;
         lineWidth = 1;
@@ -1421,7 +1567,7 @@ class GoldenCompassFacePainter extends CustomPainter {
       );
     }
 
-    // Draw cardinal directions (N, E, S, W) that rotate with heading
+    // Draw cardinal directions
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
@@ -1453,7 +1599,7 @@ class GoldenCompassFacePainter extends CustomPainter {
 
     // Draw degree numbers
     for (int i = 0; i < 36; i++) {
-      if (i % 3 == 0) { // Every 30 degrees
+      if (i % 3 == 0) {
         final degree = i * 10;
         final angle = (degree - currentHeading) * pi / 180;
         final x = center.dx + (radius - 60) * cos(angle - pi / 2);
@@ -1494,12 +1640,12 @@ class GoldenCompassNeedlePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final needleLength = size.width / 2 - 40;
 
-    // North pointer (red - points to Qibla)
+    // North pointer (red/green - points to Qibla)
     final northPath = Path();
     northPath.moveTo(center.dx, center.dy - needleLength);
-    northPath.lineTo(center.dx - 10, center.dy + 10);
+    northPath.lineTo(center.dx - 12, center.dy + 15);
     northPath.lineTo(center.dx, center.dy);
-    northPath.lineTo(center.dx + 10, center.dy + 10);
+    northPath.lineTo(center.dx + 12, center.dy + 15);
     northPath.close();
 
     final northGradient = Paint()
@@ -1517,16 +1663,16 @@ class GoldenCompassNeedlePainter extends CustomPainter {
     final northBorderPaint = Paint()
       ..color = const Color(0xFFDAA520)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 2.5;
 
     canvas.drawPath(northPath, northBorderPaint);
 
     // South pointer (black/grey)
     final southPath = Path();
     southPath.moveTo(center.dx, center.dy + needleLength);
-    southPath.lineTo(center.dx - 8, center.dy - 10);
+    southPath.lineTo(center.dx - 10, center.dy - 15);
     southPath.lineTo(center.dx, center.dy);
-    southPath.lineTo(center.dx + 8, center.dy - 10);
+    southPath.lineTo(center.dx + 10, center.dy - 15);
     southPath.close();
 
     final southGradient = Paint()
@@ -1543,13 +1689,13 @@ class GoldenCompassNeedlePainter extends CustomPainter {
 
     // Add shine effect on north pointer
     final shinePath = Path();
-    shinePath.moveTo(center.dx - 3, center.dy - needleLength + 10);
-    shinePath.lineTo(center.dx - 5, center.dy);
+    shinePath.moveTo(center.dx - 4, center.dy - needleLength + 15);
+    shinePath.lineTo(center.dx - 6, center.dy);
     shinePath.lineTo(center.dx - 2, center.dy);
     shinePath.close();
 
     final shinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.4);
+      ..color = Colors.white.withOpacity(0.5);
 
     canvas.drawPath(shinePath, shinePaint);
   }
@@ -1560,7 +1706,7 @@ class GoldenCompassNeedlePainter extends CustomPainter {
   }
 }
 
-// ================= Tasbih Screen (ไม่เปลี่ยนแปลง) =================
+// ================= Tasbih Screen =================
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
 
@@ -1580,20 +1726,7 @@ class _TasbihScreenState extends State<TasbihScreen>
   late AnimationController _dropdownController;
 
   final List<int> incrementOptions = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    15,
-    30,
-    50,
-    100,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 30, 50, 100,
   ];
 
   @override
@@ -1683,7 +1816,7 @@ class _TasbihScreenState extends State<TasbihScreen>
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         title: const Text(
-          "Digital Tasbih",
+          "ดิจิตอล ตัสบีห์",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: const Color(0xFF1A1A1A),
@@ -1696,8 +1829,7 @@ class _TasbihScreenState extends State<TasbihScreen>
               padding: const EdgeInsets.all(24.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight:
-                      MediaQuery.of(context).size.height -
+                  minHeight: MediaQuery.of(context).size.height -
                       kToolbarHeight -
                       MediaQuery.of(context).padding.top -
                       MediaQuery.of(context).padding.bottom -
@@ -1743,7 +1875,6 @@ class _TasbihScreenState extends State<TasbihScreen>
                             ),
                           ),
                         ),
-
                         Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFF333333),
@@ -1759,7 +1890,7 @@ class _TasbihScreenState extends State<TasbihScreen>
                               foregroundColor: Colors.white,
                             ),
                             child: Text(
-                              isEditMode ? "Save" : "Edit",
+                              isEditMode ? "บันทึก" : "แก้ไข",
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -1767,7 +1898,6 @@ class _TasbihScreenState extends State<TasbihScreen>
                             ),
                           ),
                         ),
-
                         Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFF333333),
@@ -1783,7 +1913,7 @@ class _TasbihScreenState extends State<TasbihScreen>
                               foregroundColor: Colors.white,
                             ),
                             child: const Text(
-                              "Reset",
+                              "รีเซ็ต",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -1801,34 +1931,33 @@ class _TasbihScreenState extends State<TasbihScreen>
                       builder: (context, child) {
                         return Transform.scale(
                           scale: 1.0 + (_tapController.value * 0.1),
-                          child:
-                              isEditMode
-                                  ? SizedBox(
-                                    width: 200,
-                                    child: TextField(
-                                      controller: _editController,
-                                      keyboardType: TextInputType.number,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 60,
-                                        fontWeight: FontWeight.w300,
-                                        color: Colors.white,
-                                      ),
-                                      decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        enabledBorder: InputBorder.none,
-                                        focusedBorder: InputBorder.none,
-                                      ),
-                                    ),
-                                  )
-                                  : Text(
-                                    count.toString(),
+                          child: isEditMode
+                              ? SizedBox(
+                                  width: 200,
+                                  child: TextField(
+                                    controller: _editController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      fontSize: 80,
+                                      fontSize: 60,
                                       fontWeight: FontWeight.w300,
                                       color: Colors.white,
-                                      ),
+                                    ),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                    ),
                                   ),
+                                )
+                              : Text(
+                                  count.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 80,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         );
                       },
                     ),
@@ -1871,22 +2000,19 @@ class _TasbihScreenState extends State<TasbihScreen>
                         height: 70,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              count > 0
-                                  ? const Color(0xFF4CAF50)
-                                  : const Color(0xFF333333),
-                          boxShadow:
-                              count > 0
-                                  ? [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF4CAF50,
-                                      ).withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ]
-                                  : [],
+                          color: count > 0
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFF333333),
+                          boxShadow: count > 0
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF4CAF50)
+                                        .withOpacity(0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ]
+                              : [],
                         ),
                         child: Icon(
                           Icons.keyboard_arrow_down,
@@ -1966,25 +2092,20 @@ class _TasbihScreenState extends State<TasbihScreen>
                                           vertical: 8,
                                         ),
                                         decoration: BoxDecoration(
-                                          color:
-                                              isSelected
-                                                  ? const Color(0xFF4CAF50)
-                                                  : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          color: isSelected
+                                              ? const Color(0xFF4CAF50)
+                                              : Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
-                                        child: Text(                                        "+$value",
+                                        child: Text(
+                                          "+$value",
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 14,
-
-
-                                            
-                                            fontWeight:
-                                                isSelected
-                                                    ? FontWeight.bold
-                                                    : FontWeight.normal,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
                                           ),
                                         ),
                                       ),

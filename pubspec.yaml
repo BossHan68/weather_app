@@ -30,20 +30,26 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.1.0
-  intl: ^0.17.0
+  http: ^1.5.0
+  intl: ^0.20.2
   shared_preferences: ^2.2.2 # รองรับ String double
-  file_picker: ^5.3.1 
+  file_picker: ^10.3.3 
   path_provider: ^2.0.11  # สำหรับการจัดการไฟล์
   geolocator: 13.0.4
   animated_splash_screen: ^1.3.0
   provider: ^6.0.5  
-  flutter_local_notifications: ^17.0.0
-  permission_handler: ^11.3.1
+  flutter_local_notifications: ^19.4.2
+  permission_handler: ^12.0.1
+  #profile
+  desktop_drop: any
+  file_selector: any
+
+
   #ละหมาด
-  flutter_compass: ^0.7.0
+  # flutter_compass: ^0.8.1
   flutter_svg: ^2.0.7
   flutter_qiblah: ^3.0.3
+  flutter_compass_v2: ^1.0.0   # หรือเวอร์ชันล่าสุดบน pub.dev
   
 
   
